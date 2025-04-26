@@ -9,8 +9,6 @@ from timeit import default_timer as timer
 
 transposition_table = dict()
 
-
-
 class full_move:
 
   # Constructor for full_move
@@ -25,7 +23,6 @@ class full_move:
   # Function to compare different full_moves
   def equals(self, full_move2):
     return self.move_sequence == full_move2.move_sequence
-
 
 
 def writeBoard(game : Game):
