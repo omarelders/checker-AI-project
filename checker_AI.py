@@ -25,6 +25,92 @@ class full_move:
     return self.move_sequence == full_move2.move_sequence
 
 
+class Node:
+
+  def __init__(self, game : Game, parent = None, move = None):
+    self.game = game
+    self.children = list()
+    self.parent = parent
+    self.move = move
+    self.value = None
+    self.hash = self.hashGame()
+
+  def hashGame(self):
+    hashed = np.zeros(32, dtype=int) 
+
+    for piece in self.game.board.pieces:
+      if not piece.captured:
+        pos = piece.position - 1
+
+
+        if piece.player == 1 and piece.king:
+          hashed[pos] = 3
+
+  
+        elif piece.player == 1 and not piece.king:
+          hashed[pos] = 1
+
+  
+        elif piece.player == 2 and piece.king:
+          hashed[pos] = 4
+
+  
+        elif piece.player == 2 and not piece.king:
+          hashed[pos] = 2
+
+    hashedString = ''.join(map(str, hashed))
+    return hashedString
+
+  
+  def evaluate(self, maximizingPlayer):
+
+  
+    self.value = simpleEvaluationFunction(self.game, maximizingPlayer)
+
+  
+    transposition_table[self.hash] = self.value 
+
+    return self.value
+
+  
+  def isTerminalNode(self):
+    return self.game.is_over()
+
+  
+  def create_children(self):
+
+  
+    allBoards = getAllChildBoards(Node(self.game))
+
+  
+    for game, move in allBoards:
+      self.children.append(Node(game=game, parent=self, move=move))
+
+  
+  
+  def isQuiet(self):
+
+    # If this is the root node, it is definitely quiet
+    if not self.parent is None:
+
+      # Count the number of pieces in the parent board. If the current board has a different number of pieces, a capture occurred
+      parentPieceCount = 0
+      for piece in self.parent.game.board.pieces:
+        if not piece.captured:
+          parentPieceCount += 1
+      pieceCount = 0
+      for piece in self.game.board.pieces:
+        if not piece.captured:
+          pieceCount += 1
+      if pieceCount == parentPieceCount:
+        return True
+      else:
+        return False
+
+        
+    return True
+
+
 def writeBoard(game : Game):
   board = np.full((8,8), '*', dtype = str)
   for piece in game.board.pieces:
@@ -47,3 +133,7 @@ def writeBoard(game : Game):
     print(*board[c], sep="")
   print()
 
+def getNextBoard(game : Game, move : full_move) -> Game:
+  next_board = copy.deepcopy(game)
+  move.make_move(game=next_board)
+  return next_board
