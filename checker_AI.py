@@ -180,12 +180,10 @@ def writeBoard(game : Game):
     print(*board[c], sep="")
   print()
 
-<<<<<<< HEAD
 def getNextBoard(game : Game, move : full_move) -> Game:
   next_board = copy.deepcopy(game)
   move.make_move(game=next_board)
   return next_board
-=======
 
 
 
@@ -210,4 +208,3 @@ def simpleEvaluationFunction(game: Game, maximizingPlayer: bool) -> float:
             elif piece.player == 2:
                 score -= 1
     return score
->>>>>>> 52e9fab3371113c7d32328afcea499673a6fe669
