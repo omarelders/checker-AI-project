@@ -208,3 +208,98 @@ def simpleEvaluationFunction(game: Game, maximizingPlayer: bool) -> float:
             elif piece.player == 2:
                 score -= 1
     return score
+
+
+
+# Function which starts minimax at the current board to the desired depth and backtracks to get the best move
+def minimaxStart(game : Game, depth : int, maximizingPlayer : bool):
+
+  # Define the root node at the current board
+  initialNode = Node(game)
+
+  # Run minimax and store the resulting value of the root
+  val = minimax(initialNode, depth, maximizingPlayer)
+
+  # Backtrack to get the best move (which shares a val with the root)
+  currentNode = initialNode
+  transposition_table.clear()
+  while True:
+    for child in currentNode.children:
+      if child.value == val:
+        return child.move
+
+# The recursive minimax function
+def minimax(node : Node, depth : int, maximizingPlayer : bool):
+
+  # If we've reached a terminal node or we've reached the search depth, evaluate the current node
+  if depth == 0 or node.isTerminalNode():
+    return node.evaluate(maximizingPlayer)
+
+  # Otherwise, expand the node
+  node.create_children()
+
+  # If we're currently the maximizing player, get the maximum value of the child nodes
+  if maximizingPlayer:
+    value = -99999
+    for child in node.children:
+      value = max([value, minimax(child, depth - 1, False)]) # Get the value of the child node via recursion. Reduce depth to continue searching by 1 and swap maximizingPlayer
+    node.value = value
+    return value
+
+  # If we're currently the minimizing player, get the minimum value of the child nodes
+  else:
+    value = 99999
+    for child in node.children:
+      value = min([value, minimax(child, depth - 1, True)]) # Get the value of the child node via recursion. Reduce depth to continue searching by 1 and swap maximizingPlayer
+    node.value = value
+    return value
+
+
+if __name__ == "__main__":
+    game = Game()
+    depth = 3
+    human_player = 1  # 1 = white, 2 = black
+
+    print("CHECKERS - Human vs AI")
+    print("Move format: Enter numbers like '0' for the first move in the list\n")
+
+    while not game.is_over():
+        writeBoard(game)
+        
+        if game.whose_turn() == human_player:
+            # Human turn - fixed format
+            legal_moves = getAllFullMoves(game)
+            
+            if not legal_moves:
+                print("No legal moves available!")
+                break
+                
+            print("\nYour legal moves:")
+            for i, move_obj in enumerate(legal_moves):
+                # Directly access the position numbers stored in move_sequence
+                print(f"{i}: Positions {move_obj.move_sequence}")
+
+            while True:
+                try:
+                    choice = int(input("Enter move number: "))
+                    if 0 <= choice < len(legal_moves):
+                        legal_moves[choice].make_move(game)
+                        break
+                    else:
+                        print(f"Invalid number. Enter 0-{len(legal_moves)-1}")
+                except ValueError:
+                    print("Numbers only please!")
+        
+        else:
+            # AI turn
+            print("\nAI thinking...")
+            start_time = timer()
+            ai_move = minimaxStart(game, depth, maximizingPlayer=(human_player==2))
+            ai_move.make_move(game)
+            print(f"AI moved positions: {ai_move.move_sequence} (in {timer()-start_time:.1f}s)\n")
+
+    # Game over
+    writeBoard(game)
+    winner = game.get_winner()
+    print("\nGame Over!")
+    print("Winner:","Human" if winner==human_player else "AI" if winner else "Draw")
